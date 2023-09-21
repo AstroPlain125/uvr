@@ -9,6 +9,7 @@ from uvr5_pack.lib_v5 import spec_utils
 from uvr5_pack.utils import _get_name_params,inference
 from uvr5_pack.lib_v5.model_param_init import ModelParameters
 from scipy.io import wavfile
+import argparse
 
 class  _audio_pre_():
     def __init__(self, model_path,device,is_half):
@@ -99,10 +100,14 @@ class  _audio_pre_():
             wavfile.write(os.path.join(vocal_root , 'vocal_{}.wav'.format(name) ), self.mp.param['sr'], (np.array(wav_vocals)*32768).astype("int16"))
 
 if __name__ == '__main__':
-    device = 'cuda'
-    is_half=True
-    model_path='uvr5_weights/2_HP-UVR.pth'
-    pre_fun = _audio_pre_(model_path=model_path,device=device,is_half=True)
-    audio_path = 'audio.aac'
-    save_path = 'opt'
-    pre_fun._path_audio_(audio_path , save_path,save_path)
+    parser = argparse.ArgumentParser(description='Process audio file to separate vocal and instrumental tracks.')
+    parser.add_argument('--audio_path', type=str, required=True, help='Path to the input audio file')
+    parser.add_argument('--save_path', type=str, required=True, help='Path to save the output files')
+    parser.add_argument('--model_path', type=str, default='uvr5_weights/2_HP-UVR.pth', help='Path to the model file')
+    parser.add_argument('--device', type=str, default='cuda', help='Device to run the model on')
+    parser.add_argument('--is_half', type=bool, default=True, help='Whether to use half precision')
+
+    args = parser.parse_args()
+
+    pre_fun = _audio_pre_(model_path=args.model_path, device=args.device, is_half=args.is_half)
+    pre_fun._path_audio_(args.audio_path, args.save_path, args.save_path)
